@@ -1,0 +1,71 @@
+classdef StrategyExpMovingAvg < StrategyBase
+    
+    properties (Constant)
+        ExpFun = @(x, tau) exp(-x/tau); % exp(-x/t), tau is mean life, so this is exponential decay
+        HalfFun = @(x, tau) 2 ^ (-x/tau); % 2 ^ (-x/t), tau is half life, so this is half life decay
+    end
+    
+    properties (GetAccess = public, SetAccess = private)
+        DecayFun = StrategyExpMovingAvg.ExpFun;
+        
+        TargetField = 'AdjClose';
+        TargetData = [];
+    end
+    
+    methods 
+        function theSt = StrategyExpMovingAvg(aDecayFun, aMeanLife)
+            
+            theSt.DecayFun = aDecayFun;
+            theSt.MeanLife = aMeanLife;
+        end
+        
+        function setMovAvgTargetField(aSt, aTargetField)
+            if exist('aTargetField', 'var')
+                assert(ischar(aTargetField), 'aTargetField should be string (def: AdjClose)');
+                aSt.TargetField = aTargetField;
+            end
+            
+        end
+        
+        function run (aTicker, aST)
+            
+            % Convert cell input to char
+            if iscell(aTicker)
+                if numel(aTicker) > 1
+                    warning('Only one ticker can run at a time');
+                end
+                aTicker = aTicker{1};
+            end
+            
+            % Assign target data
+            myData = aST.Data.(aTicker);
+            assert(~ isempty(myData), 'addData first');
+            try
+                myTargetData = double(myData.(aTargetField));
+            catch
+                error('setMovAvgTarget:Input:Err', ...
+                    '%s is not available fields on the dataset', aTargetField);
+            end
+            
+            
+            myCount = 1;
+            myMovAvg = zeros(size(myAdjClose));
+            for i = 1 : numel(myAdjClose) - 1
+                myCount = myCount + 1;
+                myMovAvg(i) = myAdjClose(i) + myAdjClose(i + 1);
+                
+                if myCount == aST.LookBack
+                    myMovAvg(i) / aST.LookBack;
+                else
+                    %% TODO
+                    myMovAvg(i)
+                    
+                end
+                
+            end
+            
+        end
+    end
+    
+end
+

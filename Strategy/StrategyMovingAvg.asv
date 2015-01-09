@@ -1,0 +1,66 @@
+classdef StrategyMovingAvg < StrategyBase
+    
+    properties (GetAccess = public, SetAccess = private)
+        LookBack = 3;
+        ExpWeight = 1;
+        TargetField = 'AdjClose';
+        TargetData = [];
+    end
+    
+    methods 
+        function theSt = StrategyMovingAvg(aLookBack, aExpWeight)
+            
+            theSt.LookBack = aLookBack;
+            theSt.ExpWeight = aExpWeight;
+        end
+        
+        function setMovAvgTargetField(aSt, aTargetField)
+            if exist('aTargetField', 'var')
+                assert(ischar(aTargetField), 'aTargetField should be string (def: AdjClose)');
+                aSt.TargetField = aTargetField;
+            end
+            
+        end
+        
+        function run (aTicker, aST)
+            
+            % Convert cell input to char
+            if iscell(aTicker)
+                if numel(aTicker) > 1
+                    warning('Only one ticker can run at a time');
+                end
+                aTicker = aTicker{1};
+            end
+            
+            % Assign target data
+            myData = aST.Data.(aTicker);
+            assert(~ isempty(myData), 'addData first');
+            try
+                myTargetData = double(myData.(aTargetField));
+            catch
+                error('setMovAvgTarget:Input:Err', ...
+                    '%s is not available fields on the dataset', aTargetField);
+            end
+            
+            
+            myCount = 1;
+            myMovAvg = zeros(size(myAdjClose));
+            for i = 1 : numel(myAdjClose) - 1
+                myCount = myCount + 1;
+                myMovAvg(i) = myAdjClose(i) + myAdjClose(i + 1);
+                
+                if myCount == aST.LookBack
+                    myMovAvg(i) / aST.LookBack;
+                else
+                    %% TODO
+                    myMovAvg(i)
+                    
+                end
+                
+            end
+            
+        end
+    end
+    
+end
+
